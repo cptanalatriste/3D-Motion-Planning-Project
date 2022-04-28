@@ -49,16 +49,6 @@ Once all the waypoints have been reached (within a 1m range as defined in `Motio
 the drone proceed to land and disarm.
 
 
-And here's a lovely image of my results (ok this image has nothing to do with it, but it's a nice example of how to include images in your writeup!)
-![Top Down View](./misc/high_up.png)
-
-Here's | A | Snappy | Table
---- | --- | --- | ---
-1 | `highlight` | **bold** | 7.41
-2 | a | b | c
-3 | *italic* | text | 403
-4 | 2 | 3 | abcd
-
 ### Implementing Your Path Planning Algorithm
 
 #### 1. Set your global home position
@@ -83,6 +73,18 @@ This step is to add flexibility to the desired goal location. Should be able to 
 
 #### 5. Modify A* to include diagonal motion (or replace A* altogether)
 Minimal requirement here is to modify the code in planning_utils() to update the A* implementation to include diagonal motions on the grid that have a cost of sqrt(2), but more creative solutions are welcome. Explain the code you used to accomplish this step.
+
+###### Explanation 
+To enable diagonal motion, we modify these code elements:
+
+1. The `Action` enumeration: We added four elements corresponding
+to `NORTH_WEST`, `NORTH_EAST`, `SOUTH_WEST` and `SOUTH_EAST` actions.
+As per the instructions, the cost of these actions is `sqrt(2)`.
+2. The `planning_utils.valid_actions()` function: We added extra code
+to remove our brand-new actions in case they move the drone
+to unfeasible positions, like collision with obstacles or outside 
+map limits.
+
 
 #### 6. Cull waypoints 
 For this step you can use a collinearity test or ray tracing method like Bresenham. The idea is simply to prune your path of unnecessary waypoints. Explain the code you used to accomplish this step.

@@ -1,6 +1,6 @@
 import argparse
 import time
-from typing import Tuple
+from typing import Tuple, List
 
 import msgpack
 from enum import Enum, auto
@@ -166,7 +166,7 @@ class MotionPlanning(Drone):
         # or move to a different search space such as a graph (not done here)
         print('Local Start and Goal: ', grid_start, grid_goal)
         path, _ = a_star(grid, heuristic, grid_start, grid_goal)
-        # TODO: prune path to minimize number of waypoints
+        path: List[Tuple] = prune_path(path)
         # TODO (if you're feeling ambitious): Try a different approach altogether!
 
         # Convert path to waypoints
@@ -242,6 +242,34 @@ class MotionPlanning(Drone):
                                        int(self.local_position[east_coordinate_index]) - east_offset)
 
         return grid_start
+
+
+def prune_path(path: List[Tuple]):
+    # DONE: prune path to minimize number of waypoints
+
+    pruned_path: List[Tuple] = [waypoint for waypoint in path]
+
+    current_index: int = 0
+    while current_index < len(pruned_path) - 2:
+        first_waypoint: np.ndarray = to_point(pruned_path[current_index])
+        middle_waypoint: np.ndarray = to_point(pruned_path[current_index + 1])
+        final_waypoint: np.ndarray = to_point(pruned_path[current_index + 2])
+
+        if check_collinearity(first_waypoint, middle_waypoint, final_waypoint):
+            pruned_path.remove(pruned_path[current_index + 1])
+        else:
+            current_index += 1
+    return pruned_path
+
+
+def to_point(waypoint: Tuple[int]) -> np.ndarray:
+    return np.array([waypoint[0], waypoint[1], 1.]).reshape(1, -1)
+
+
+def check_collinearity(first_waypoint, middle_waypoint, final_waypoint, epsilon=1e-6) -> bool:
+    matrix: np.ndarray = np.concatenate((first_waypoint, middle_waypoint, final_waypoint), 0)
+    determinant: float = np.linalg.det(matrix)
+    return abs(determinant) < epsilon
 
 
 if __name__ == "__main__":
