@@ -1,5 +1,7 @@
 import argparse
 import time
+from typing import Tuple
+
 import msgpack
 from enum import Enum, auto
 
@@ -87,7 +89,8 @@ class MotionPlanning(Drone):
         print("waypoint transition")
         self.target_position = self.waypoints.pop(0)
         print('target position', self.target_position)
-        self.cmd_position(self.target_position[0], self.target_position[1], self.target_position[2], self.target_position[3])
+        self.cmd_position(self.target_position[0], self.target_position[1], self.target_position[2],
+                          self.target_position[3])
 
     def landing_transition(self):
         self.flight_state = States.LANDING
@@ -119,29 +122,39 @@ class MotionPlanning(Drone):
 
         self.target_position[2] = TARGET_ALTITUDE
 
-        # TODO: read lat0, lon0 from colliders into floating point values
-        
-        # TODO: set home position to (lon0, lat0, 0)
+        map_file: str = 'colliders.csv'
 
-        # TODO: retrieve current global position
- 
-        # TODO: convert to current local position using global_to_local()
-        
+        self.set_global_home(map_file)
+        self.determine_local_position()
+
         print('global home {0}, position {1}, local position {2}'.format(self.global_home, self.global_position,
                                                                          self.local_position))
         # Read in obstacle map
-        data = np.loadtxt('colliders.csv', delimiter=',', dtype='Float64', skiprows=2)
-        
+        data = np.loadtxt(map_file, delimiter=',', dtype='Float64', skiprows=2)
+
         # Define a grid for a particular altitude and safety margin around obstacles
         grid, north_offset, east_offset = create_grid(data, TARGET_ALTITUDE, SAFETY_DISTANCE)
         print("North offset = {0}, east offset = {1}".format(north_offset, east_offset))
         # Define starting point on the grid (this is just grid center)
-        grid_start = (-north_offset, -east_offset)
-        # TODO: convert start position to current position rather than map center
-        
+        # grid_start = (-north_offset, -east_offset)
+        grid_start: Tuple[float, float] = self.get_starting_location(north_offset=north_offset,
+                                                                     east_offset=east_offset)
+
         # Set goal as some arbitrary position on the grid
-        grid_goal = (-north_offset + 10, -east_offset + 10)
-        # TODO: adapt to set goal as latitude / longitude position and convert
+        # grid_goal = (-north_offset + 10, -east_offset + 10)
+
+        goal_latitude: float = 37.7938449745129
+        goal_longitude: float = -122.39647367780543
+        grid_goal: Tuple[float, float] = self.get_goal_location(goal_latitude=goal_latitude,
+                                                                goal_longitude=goal_longitude,
+                                                                goal_altitude=TARGET_ALTITUDE,
+                                                                north_offset=north_offset,
+                                                                east_offset=east_offset)
+
+        print(f"grid_goal value {grid[grid_goal[0], grid_goal[1]]}")
+        obstacle_marker: int = 1
+        if grid_goal == grid_start or grid[grid_goal[0], grid_goal[1]] == obstacle_marker:
+            print("ERROR!!!!! The goal is not valid")
 
         # Run A* to find a path from start to goal
         # TODO: add diagonal motions with a cost of sqrt(2) to your A* implementation
@@ -169,6 +182,60 @@ class MotionPlanning(Drone):
         #    pass
 
         self.stop_log()
+
+    def set_global_home(self, map_file: str):
+        # DONE: read lat0, lon0 from colliders into floating point values
+        with open(map_file) as file:
+            first_line: str = file.readline()
+            latitude_info: str
+            longitude_info: str
+            latitude_info, longitude_info = tuple(first_line.split(","))
+
+            # These values are the center of the map (according to the Configuration Space Exercise.
+            altitude: float = 0.0
+            latitude: float = float(latitude_info.split()[1])
+            longitude: float = float(longitude_info.split()[1])
+
+            # DONE: set home position to (lon0, lat0, 0)
+            self.set_home_position(longitude=longitude, latitude=latitude, altitude=altitude)
+            print(f"home position->longitude {longitude} latitude {latitude} altitude {altitude}  ")
+
+    def determine_local_position(self):
+        north_local: float
+        east_local: float
+        down_local: float
+
+        # DONE: retrieve current global position
+        global_position: Tuple[float, float, float] = (self._longitude, self._latitude, self._altitude)
+        print(f"global_position {global_position}")
+
+        # DONE: convert to current local position using global_to_local()
+        north_local, east_local, down_local = global_to_local(global_position, self.global_home)
+        print(f"north_local {north_local} east_local {east_local} down_local {down_local}")
+
+    def get_goal_location(self, goal_latitude: float, goal_longitude: float, goal_altitude: float,
+                          north_offset: int, east_offset: int) -> Tuple[int, int]:
+
+        # DONE: adapt to set goal as latitude / longitude position and convert
+        print(f"goal_longitude {goal_longitude} goal_latitude {goal_latitude} goal_altitude {goal_altitude} ")
+
+        global_position: Tuple[float, float, float] = (goal_longitude, goal_latitude, goal_altitude)
+
+        north_goal, east_goal, _ = global_to_local(global_position, self.global_home)
+        north_goal, east_goal = int(north_goal), int(east_goal)
+
+        return north_goal - north_offset, east_goal - east_offset
+
+    def get_starting_location(self, north_offset: int, east_offset: int) -> Tuple[int, int]:
+        # DONE: convert start position to current position rather than map center
+
+        north_coordinate_index: int = 0
+        east_coordinate_index: int = 1
+
+        grid_start: Tuple[int, int] = (int(self.local_position[north_coordinate_index]) - north_offset,
+                                       int(self.local_position[east_coordinate_index]) - east_offset)
+
+        return grid_start
 
 
 if __name__ == "__main__":

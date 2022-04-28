@@ -27,7 +27,27 @@ You're reading it! Below I describe how I addressed each rubric point and where 
 ### Explain the Starter Code
 
 #### 1. Explain the functionality of what's provided in `motion_planning.py` and `planning_utils.py`
-These scripts contain a basic planning implementation that includes...
+
+After arming the drone, the `MotionPlanning.plan_path()` takes control. 
+Here, the code does the following:
+
+1. We set a fixed altitude of 5m to the drone's trajectory.
+2. We obtain a grid representation of the map stored in `colliders.csv` using `planning_utils.create_grid()`.
+This method returns a numpy array, where each available cell has the value of `0.0` and an unreachable cell
+has the value of `1.0` considering the drone's altitude (see 1.) and a safety distance regarding 
+obstacles (with value 5m).
+3. We set the drone's goal destination, as the cell positioned 10m north and 10m east from the starting
+location.
+4. The function `planning_utils.a_star()` produces a plan for reaching the goal destination (see 3.)
+via the A* algorithm using the euclidean distance as heuristic.
+This plan is composed by a list of waypoints.
+
+The plan is stored at the attribute `waypoints`. Then, by calling `MotionPlanning.send_waypoints()`
+we trigger takeoff and then waypoint traversal, in the similar fashion as in
+the Backyard flier project.
+Once all the waypoints have been reached (within a 1m range as defined in `MotionPlanning.local_position_callback()`)
+the drone proceed to land and disarm.
+
 
 And here's a lovely image of my results (ok this image has nothing to do with it, but it's a nice example of how to include images in your writeup!)
 ![Top Down View](./misc/high_up.png)
