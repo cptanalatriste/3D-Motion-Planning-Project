@@ -1,4 +1,5 @@
 from enum import Enum
+from math import sqrt
 from queue import PriorityQueue
 import numpy as np
 
@@ -57,6 +58,12 @@ class Action(Enum):
     EAST = (0, 1, 1)
     NORTH = (-1, 0, 1)
     SOUTH = (1, 0, 1)
+
+    # DONE: add diagonal motions with a cost of sqrt(2) to your A* implementation
+    NORTH_WEST = (-1, -1, sqrt(2))
+    NORTH_EAST = (-1, 1, sqrt(2))
+    SOUTH_WEST = (1, -1, sqrt(2))
+    SOUTH_EAST = (1, 1, sqrt(2))
 
     @property
     def cost(self):

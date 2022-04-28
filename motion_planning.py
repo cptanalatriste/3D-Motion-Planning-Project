@@ -117,8 +117,10 @@ class MotionPlanning(Drone):
     def plan_path(self):
         self.flight_state = States.PLANNING
         print("Searching for a path ...")
-        TARGET_ALTITUDE = 5
-        SAFETY_DISTANCE = 5
+        # TARGET_ALTITUDE = 5
+        # SAFETY_DISTANCE = 5
+        TARGET_ALTITUDE: int = 2
+        SAFETY_DISTANCE: int = 6
 
         self.target_position[2] = TARGET_ALTITUDE
 
@@ -144,8 +146,8 @@ class MotionPlanning(Drone):
         grid_start: Tuple[float, float] = self.get_starting_location(north_offset=north_offset,
                                                                      east_offset=east_offset)
 
-        goal_latitude: float = 37.7938449745129
-        goal_longitude: float = -122.39647367780543
+        goal_latitude: float = 37.793480
+        goal_longitude: float = -122.396690
         grid_goal: Tuple[float, float] = self.get_goal_location(goal_latitude=goal_latitude,
                                                                 goal_longitude=goal_longitude,
                                                                 goal_altitude=TARGET_ALTITUDE,
@@ -158,7 +160,6 @@ class MotionPlanning(Drone):
             print("ERROR!!!!! The goal is not valid")
 
         # Run A* to find a path from start to goal
-        # TODO: add diagonal motions with a cost of sqrt(2) to your A* implementation
         # or move to a different search space such as a graph (not done here)
         print('Local Start and Goal: ', grid_start, grid_goal)
         path, _ = a_star(grid, heuristic, grid_start, grid_goal)
