@@ -28,6 +28,8 @@ You're reading it! Below I describe how I addressed each rubric point and where 
 
 #### 1. Explain the functionality of what's provided in `motion_planning.py` and `planning_utils.py`
 
+###### Explanation
+
 After arming the drone, the `MotionPlanning.plan_path()` takes control. 
 Here, the code does the following:
 
@@ -43,7 +45,7 @@ via the A* algorithm using the euclidean distance as heuristic.
 This plan is composed by a list of waypoints.
 
 The plan is stored at the attribute `waypoints`. Then, by calling `MotionPlanning.send_waypoints()`
-we trigger takeoff and then waypoint traversal, in the similar fashion as in
+we trigger takeoff and then waypoint traversal, in a similar fashion as in
 the Backyard flier project.
 Once all the waypoints have been reached (within a 1m range as defined in `MotionPlanning.local_position_callback()`)
 the drone proceed to land and disarm.
@@ -54,22 +56,47 @@ the drone proceed to land and disarm.
 #### 1. Set your global home position
 Here students should read the first line of the csv file, extract lat0 and lon0 as floating point values and use the self.set_home_position() method to set global home. Explain briefly how you accomplished this in your code.
 
+###### Explanation 
+At the method `MotionPlanning.set_global_home()`, we do the following:
 
-And here is a lovely picture of our downtown San Francisco environment from above!
-![Map of SF](./misc/map.png)
+1. We read the first line of the `map_file` text file.
+2. We split this line first using a `,` separator.
+3. For each one of the strings obtain in 2. we split them using the `<space>` separator.
+The second resulting string corresponds to the numeric values we need.
 
 #### 2. Set your current local position
 Here as long as you successfully determine your local position relative to global home you'll be all set. Explain briefly how you accomplished this in your code.
 
-
-Meanwhile, here's a picture of me flying through the trees!
-![Forest Flying](./misc/in_the_trees.png)
+###### Explanation 
+At the method `MotionPlanning.determine_local_position()`, we obtain the global
+position accessing the attributes `self._longitude`, `self._latitude`
+and `self._altitude`.
+Then, we pass these value to `frameutils.global_to_local()` to obtain a 
+local position relative to `self.global_home`.
 
 #### 3. Set grid start position from local position
 This is another step in adding flexibility to the start location. As long as it works you're good to go!
 
+###### Explanation 
+
+In `MotionPlanning.get_starting_location()`, we convert the 
+current position, available at `self.local_position` to a valid
+grid value.
+We accomplish this by subtracting the offsets produced by
+`planning_utils.create_grid()`.
+
 #### 4. Set grid goal position from geodetic coords
 This step is to add flexibility to the desired goal location. Should be able to choose any (lat, lon) within the map and have it rendered to a goal location on the grid.
+
+###### Explanation 
+We obtain the goal grid location from longitude and latitude
+values in `MotionPlanning.get_goal_location()`.
+The method does the following:
+
+1. We use `frameutils.global_to_local()` to convert the longitude and latitude
+values to a local position, relative to `self.global_home.`
+2. We subtract the offsets returned from `planning_utils.create_grid()` to
+generate valid grid values from the local position obtained in 1.
 
 #### 5. Modify A* to include diagonal motion (or replace A* altogether)
 Minimal requirement here is to modify the code in planning_utils() to update the A* implementation to include diagonal motions on the grid that have a cost of sqrt(2), but more creative solutions are welcome. Explain the code you used to accomplish this step.
@@ -89,6 +116,14 @@ map limits.
 #### 6. Cull waypoints 
 For this step you can use a collinearity test or ray tracing method like Bresenham. The idea is simply to prune your path of unnecessary waypoints. Explain the code you used to accomplish this step.
 
+###### Explanation 
+
+We implemented the pruning logic in the `motion_planning.prune_path()` method.
+It does the following:
+
+1. Given a path generated using `planing_utils.a_star()`, it checks if
+three consecutive waypoints are collinear using `motion_planning.check_collinearity()`.
+2. If they are collinear, one of the waypoints is removed.
 
 
 ### Execute the flight
