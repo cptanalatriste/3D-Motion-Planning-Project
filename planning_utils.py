@@ -85,14 +85,24 @@ def valid_actions(grid, current_node):
     # check if the node is off the grid or
     # it's an obstacle
 
-    if x - 1 < 0 or grid[x - 1, y] == 1:
+    obstacle_flag: int = 1
+    if x - 1 < 0 or grid[x - 1, y] == obstacle_flag:
         valid_actions.remove(Action.NORTH)
-    if x + 1 > n or grid[x + 1, y] == 1:
+    if x + 1 > n or grid[x + 1, y] == obstacle_flag:
         valid_actions.remove(Action.SOUTH)
-    if y - 1 < 0 or grid[x, y - 1] == 1:
+    if y - 1 < 0 or grid[x, y - 1] == obstacle_flag:
         valid_actions.remove(Action.WEST)
-    if y + 1 > m or grid[x, y + 1] == 1:
+    if y + 1 > m or grid[x, y + 1] == obstacle_flag:
         valid_actions.remove(Action.EAST)
+
+    if x - 1 < 0 or y - 1 < 0 or grid[x - 1, y - 1] == obstacle_flag:
+        valid_actions.remove(Action.NORTH_WEST)
+    if x - 1 < 0 or y + 1 > m or grid[x - 1, y + 1] == obstacle_flag:
+        valid_actions.remove(Action.NORTH_EAST)
+    if x + 1 > n or y - 1 < 0 or grid[x + 1, y - 1] == obstacle_flag:
+        valid_actions.remove(Action.SOUTH_WEST)
+    if x + 1 > n or y + 1 > m or grid[x + 1, y + 1] == obstacle_flag:
+        valid_actions.remove(Action.SOUTH_EAST)
 
     return valid_actions
 

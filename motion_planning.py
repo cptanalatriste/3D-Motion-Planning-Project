@@ -146,8 +146,11 @@ class MotionPlanning(Drone):
         grid_start: Tuple[float, float] = self.get_starting_location(north_offset=north_offset,
                                                                      east_offset=east_offset)
 
-        goal_latitude: float = 37.793480
-        goal_longitude: float = -122.396690
+        # goal_latitude: float = 37.793480
+        # goal_longitude: float = -122.396690
+        goal_latitude: float = 37.7938449745129
+        goal_longitude: float = -122.39647367780543
+
         grid_goal: Tuple[float, float] = self.get_goal_location(goal_latitude=goal_latitude,
                                                                 goal_longitude=goal_longitude,
                                                                 goal_altitude=TARGET_ALTITUDE,
