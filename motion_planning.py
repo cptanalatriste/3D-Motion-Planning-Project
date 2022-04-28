@@ -137,11 +137,12 @@ class MotionPlanning(Drone):
         print("North offset = {0}, east offset = {1}".format(north_offset, east_offset))
         # Define starting point on the grid (this is just grid center)
         # grid_start = (-north_offset, -east_offset)
-        grid_start: Tuple[float, float] = self.get_starting_location(north_offset=north_offset,
-                                                                     east_offset=east_offset)
 
         # Set goal as some arbitrary position on the grid
-        # grid_goal = (-north_offset + 10, -east_offset + 10)
+        grid_goal = (-north_offset + 10, -east_offset + 10)
+
+        grid_start: Tuple[float, float] = self.get_starting_location(north_offset=north_offset,
+                                                                     east_offset=east_offset)
 
         goal_latitude: float = 37.7938449745129
         goal_longitude: float = -122.39647367780543
@@ -168,6 +169,7 @@ class MotionPlanning(Drone):
         waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
         # Set self.waypoints
         self.waypoints = waypoints
+        print(f"self.waypoints {self.waypoints}")
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
         self.send_waypoints()
 
